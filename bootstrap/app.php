@@ -1,14 +1,13 @@
 <?php
 
-use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -31,13 +30,13 @@ return Application::configure(basePath: dirname(__DIR__))
                 ], Response::HTTP_INTERNAL_SERVER_ERROR);
             }
             return match (true) {
-                $e instanceof NotFoundHttpException || $e instanceof ModelNotFoundException => response()->json([
+                $e instanceof NotFoundHttpException => response()->json([
                     'success' => false,
                     'error' => 'Not Found',
                     'message' => $e->getMessage(),
                 ], Response::HTTP_NOT_FOUND),
 
-                $e instanceof AuthorizationException => response()->json([
+                $e instanceof AccessDeniedHttpException  => response()->json([
                     'success' => false,
                     'error' => 'Forbidden',
                     'message' => $e->getMessage(),
