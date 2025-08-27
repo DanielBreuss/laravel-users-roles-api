@@ -68,8 +68,10 @@ class User extends Authenticatable
      */
 
     public function hasRole(string $role): bool
-    {
-        return $this->roles()->where('name', $role)->exists();
+    {   return
+            Cache::tags('auth')->remember('user_{$this->id}_has_role_{$role}', now()->addMinutes(10), function () use ($role) {
+                return $this->roles()->where('name', $role)->exists();
+            });
     }
 
     /**
