@@ -7,6 +7,7 @@ use App\Http\Requests\UserRequest;
 use App\Http\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Cache;
 
 class UserController extends Controller
 {
@@ -15,7 +16,8 @@ class UserController extends Controller
      */
     public function index()
     {
-        $users = User::with('roles')->paginate(10);
+        $page = request('page', 1);
+        $users = User::getAllUsingCache("users_page_{$page}",10);
 
         return response()->json([
             'success' => true,
@@ -51,11 +53,13 @@ class UserController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(User $user)
+    public function show($userId)
     {
+        $userData = User::getUserByIdUsingCache($userId);
+
         return response()->json([
             'success' => true,
-            'data' => new UserResource($user->load('roles')),
+            'data' => new UserResource($userData),
             'message' => 'User retrieved successfully',
         ], Response::HTTP_OK);
     }
