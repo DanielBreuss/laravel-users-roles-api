@@ -7,6 +7,7 @@ use App\Http\Requests\RoleRequest;
 use App\Http\Resources\RoleResource;
 use App\Models\Role;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Cache;
 
 
 class RoleController extends Controller
@@ -16,7 +17,8 @@ class RoleController extends Controller
      */
     public function index()
     {
-        $roles = Role::paginate(10);
+        $page = request('page', 1);
+        $roles = Role::getAllUsingCache("roles_page_{$page}", 10);
 
        return response()->json([
            'success' => true,
@@ -48,11 +50,12 @@ class RoleController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Role $role)
+    public function show($roleId)
     {
+        $roleData = Role::getRoleByIdUsingCache($roleId, 10);
         return response()->json([
             'success' => true,
-            'data' => new RoleResource($role),
+            'data' => new RoleResource($roleData),
             'message' => 'Role retrieved successfully',
         ], Response::HTTP_OK);
     }
