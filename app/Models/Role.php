@@ -35,7 +35,7 @@ class Role extends Model
     public static function getRoleByIdUsingCache(int $id, int $minutes): Role
     {
         return
-            Cache::tags('role')->remember('role_{$id}', now()->addMinutes($minutes), function () use ($id) {
+            Cache::tags('role')->remember("role_{$id}", now()->addMinutes($minutes), function () use ($id) {
                 return self::findOrFail($id);
             });
     }
