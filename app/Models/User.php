@@ -61,16 +61,25 @@ class User extends Authenticatable
         return $this->belongsToMany(Role::class);
     }
 
+    public function assignRole($roles)
+    {
+        $this->roles()->sync($roles);
+
+        Cache::tags("auth_user:{$this->id}")->flush();
+    }
+
+
     /**
      * Role-check for auth purpose
      * @param string $role
      * @return bool
      */
 
-    public function hasRole(string $role): bool
-    {   return
-            Cache::tags('auth')->remember('user_{$this->id}_has_role_{$role}', now()->addMinutes(10), function () use ($role) {
-                return $this->roles()->where('name', $role)->exists();
+    public function hasRole(string $roleName): bool
+    {
+        return
+            Cache::tags( "auth_user:{$this->id}")->remember("has_role_{$roleName}", now()->addMinutes(10), function () use ($roleName) {
+                return $this->roles()->where('name', $roleName)->exists();
             });
     }
 
@@ -81,7 +90,7 @@ class User extends Authenticatable
     {
         return
             Cache::tags('user')->remember($cacheKey, now()->addMinutes($minutes), function () {
-            return self::with('roles')->paginate(10);
+                return self::with('roles')->paginate(10);
         });
     }
 
@@ -93,7 +102,7 @@ class User extends Authenticatable
     public static function getUserByIdUsingCache(int $id): User
     {
      return
-         Cache::tags('user')->remember('user_{$id}', now()->addMinutes(10), function () use ($id) {
+         Cache::tags('user')->remember("user_{$id}", now()->addMinutes(10), function () use ($id) {
          return self::findOrFail($id)->load('roles');
      });
     }

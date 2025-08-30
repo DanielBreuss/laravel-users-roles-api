@@ -40,7 +40,7 @@ class UserController extends Controller
        $user = User::create($request->validated());
 
         if($request->has('roles')) {
-            $user->roles()->sync($request->roles);
+            $user->assignRole($request->roles);
         }
 
         return response()->json([
@@ -72,7 +72,7 @@ class UserController extends Controller
         $user->update($request->validated());
 
         if($request->has('roles')) {
-            $user->roles()->sync($request->roles);
+            $user->assignRole($request->roles);
         }
 
         return response()->json([
